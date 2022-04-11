@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>手写简易的Promise</title>
+</head>
+
+<body>
+    <!-- 版本1：例如先用的mock平台 -->
+    <span class="city"></span>
+    <span class="weather"></span>
+
+
+    <script>
+        // Promise2的构造函数
+        class Promise2 {
+            state = 'pedding'
+            success = null
+            fail = null
+            resolve(data) {
+                setTimeout(() => {
+                    this.state = 'fulfilled'
+                    this.success(data)
+                })
+            }
+            reject(result) {
+                setTimeout(() => {
+                    this.state = 'rejected'
+                    this.success(result)
+                })
+            }
+            then(success, fail) {
+                this.success = success
+                this.fail = fail
+            }
+            constructor(fn) {
+                fn(this.resolve.bind(this), this.reject.bind(this))
+            }
+        }
+
+
+
+        const getWeather = city => new Promise2((resolve, reject) => {
+
+            let url = 'http://rap2api.taobao.org/app/mock/244238/getWeather?city=' + city
+            let xhr = new XMLHttpRequest()
+            xhr.open('GET', url, true)
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    resolve(JSON.parse(xhr.responseText))
+                } else {
+                    reject(`获取${city}天气失败`)
+                }
+            }
+            xhr.onerror = () => reject('服务器异常，请求数据失败')
+            xhr.send()
+        })
+
+        getWeather('漳州')
+            .then(
+                data => {
+                    document.querySelector('.city').innerText = data.city
+                    document.querySelector('.weather').innerText = data.weather
+                },
+                result => {
+                    console.log(result)
+                })
+    </script>
+</body>
+
+</html>
